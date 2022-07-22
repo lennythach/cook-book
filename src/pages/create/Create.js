@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
-
+import { useState, useRef, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useFetch } from '../../hooks/useFetch';
 //Styles
 import './Create.css';
 
@@ -10,21 +11,30 @@ export default function Create() {
   const [newIngredient, setNewIngredient] = useState('');
   const [ingredients, setIngredients] = useState([]);
   const ingredientsInput = useRef(null)
+  const history = useHistory()
+
+  const { postData, data } = useFetch("http://localhost:3000/recipes", "POST")
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log(title,method,cookingTime, ingredients)
+    postData({ title, ingredients, method, cookingTime:cookingTime + ' minutes' } )
   }
 
   const addIngredients = (e) => {
     e.preventDefault()
     const ing = newIngredient.trim()
     if (ing && !ingredients.includes(ing)) {
-      ingredients.push(prevIng => [...prevIng, ing])
+      setIngredients(prevIng => [...prevIng, ing])
     }
     setNewIngredient('') 
     ingredientsInput.current.focus()
   }
+
+  useEffect(()=> {
+    if (data) {
+      history.push('/')
+    }
+  },[data,history])
 
   return (
     <div className='create'>
@@ -53,6 +63,7 @@ export default function Create() {
             <button onClick={addIngredients} className={'btn'}>add</button>
           </div>
         </label>
+        <p>Current Ingredients: {ingredients.map(i=><em key={i}>{i}, </em>)}</p>
 
         <label>
           <span>Recipe Method:</span>
